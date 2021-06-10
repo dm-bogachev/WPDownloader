@@ -17,24 +17,31 @@ def download_image(url, path):
         f.write(response.content)
 
 def prepare_to_download():
+    items_len = 0
     pages_count = 1
     print('Preparing for download:\n')
 
     pages = []
     pages.append(get_page_text(BASIC_SITE + CATALOG))
-    print(f"Prepared {pages_count} out of {NUMBER_OF_PAGES} pages ({100*pages_count/NUMBER_OF_PAGES:5.2f} %) : {BASIC_SITE + CATALOG}")
+    page_soup = BeautifulSoup(pages[pages_count-1], "html.parser")
+    items_count = len(page_soup.findAll('a', class_='wallpapers__link'))
+    items_len = items_len + items_count
+    print(f"Prepared {pages_count} out of {NUMBER_OF_PAGES} pages ({100*pages_count/NUMBER_OF_PAGES:5.2f} %) : {items_count} found on {BASIC_SITE + CATALOG}")
+    
     pages_count = 2
 
     for i in range(NUMBER_OF_PAGES-1):
         postfix = 'page' + str(i+2)
         pages_url = BASIC_SITE + CATALOG +'/' + postfix
-        print(f"Prepared {pages_count} out of {NUMBER_OF_PAGES} pages ({100*pages_count/NUMBER_OF_PAGES:5.2f} %) : {pages_url}")
+        items_count = len(page_soup.findAll('a', class_='wallpapers__link', href = True))
+        items_len = items_len + items_count
+        print(f"Prepared {pages_count} out of {NUMBER_OF_PAGES} pages ({100*pages_count/NUMBER_OF_PAGES:5.2f} %) : {items_count} found on {BASIC_SITE + CATALOG}")
         pages_count = pages_count + 1
         pages.append(get_page_text(pages_url))
-    return pages
+    return pages, items_len
 
-def download(pages):
-    wallpapers_count = NUMBER_OF_PAGES*15
+def download(pages, items_len):
+    wallpapers_count = items_len
     wallpapers_downloaded = 1
     print('\nDownloading:\n')
     for page in pages:
@@ -56,12 +63,12 @@ CATALOG = '/catalog/city/1920x1080'
 #CATALOG = '/catalog/vector/1920x1080' 
 #CATALOG = '/catalog/art/1920x1080' 
 #CATALOG = '/catalog/flowers/1920x1080'
-NUMBER_OF_PAGES = 10
-DIRNAME = 'all_in_one'
+NUMBER_OF_PAGES = 100
+DIRNAME = 'q'
 
 # end Global variables
 
 ensure_dir(DIRNAME)
-pages = prepare_to_download()
-download(pages)
+pages, items_len = prepare_to_download()
+download(pages, items_len)
 
