@@ -1,6 +1,7 @@
 import sys, os
 from bs4 import BeautifulSoup
 import requests
+import time
 
 def ensure_dir(directory):
     if not os.path.exists(directory):
@@ -46,6 +47,8 @@ def download(pages, items_len):
     print('\nDownloading:\n')
     for page in pages:
         page_soup = BeautifulSoup(page, "html.parser")
+        page_data = page_soup.findAll('a', class_='wallpapers__link')
+        print(f'Downloading {len(page_data)} images:')
         for wp_item in page_soup.findAll('a', class_='wallpapers__link', href = True):
             wp_page = get_page_text(BASIC_SITE + wp_item['href'])
             item_soup = BeautifulSoup(wp_page, "html.parser")
@@ -63,12 +66,15 @@ CATALOG = '/catalog/city/1920x1080'
 #CATALOG = '/catalog/vector/1920x1080' 
 #CATALOG = '/catalog/art/1920x1080' 
 #CATALOG = '/catalog/flowers/1920x1080'
-NUMBER_OF_PAGES = 100
-DIRNAME = 'q'
+NUMBER_OF_PAGES = 300
+DIRNAME = 'all_cities'
 
 # end Global variables
 
 ensure_dir(DIRNAME)
+start_time = time.time()
 pages, items_len = prepare_to_download()
 download(pages, items_len)
+print(f'Finished in {time.time() - start_time}')
+input("Press Enter to close...")
 
